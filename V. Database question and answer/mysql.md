@@ -215,7 +215,7 @@
  目的： 给大型网站缓解查询压力
  
  过程： 
- 
+   
  request->sql语句->服务器amoeba(服务器)->dml->master mysql->（独立服务器）>同步->读数据库（另一台服务器）->client
  
  request->sql语句->服务器amoeba(服务器)->select->->读数据库（另一台服务器）->client
