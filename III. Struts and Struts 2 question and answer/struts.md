@@ -9,9 +9,9 @@
   
  	2. What are the differences between Struts1 and Struts2 or how Struts2 is better than Struts1?
  
-| Components |  Struts1 | Struts2 |
-	| :------ | :--------------------------------: |
-  	| Action Classes | Struts1 action classes are forced to extend an Abstract Class that makes it not extendable. 	|Struts2 action classes flexible and we can create them by implementing Action interface, extending ActionSupport class or just by having execute() method. |
+|Components |  Struts1 | Struts2 |
+|:----------| :-------|:------- |
+| Action Classes | Struts1 action classes are forced to extend an Abstract Class that makes it not extendable. 	|Struts2 action classes flexible and we can create them by implementing Action interface, extending ActionSupport class or just by having execute() method. |
  	 |Thread Safety|Struts1 Action Classes are Singleton and not thread safe, that makes extra care on developer side to avoid any side effects because of multithreading.|Struts2 action classes gets instantiated per request, so there is no multithreading and makes them thread safe.|
   	|Servlet API coupling|Struts1 APIs are tightly coupled with Servlet API and Request and Response objects are passed to action classes execute() method.|Struts2 API is loosely coupled with Servlet API and automatically maps the form bean data to action class java bean properties that we mostly use. If however we need reference to Servlet API classes, there are *Aware interfaces for that.|
  |Testing|Struts1 action classes are hard to test because of Servlet API coupling.|Struts2 Action classes are like normal java classes and we can test them easily by instantiating them and setting their properties.|
