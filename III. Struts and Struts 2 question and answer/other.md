@@ -40,227 +40,158 @@ example:
  </package>
 <!-- end SNIPPET: example -->
 
-type=dispatcher:
+type=dispatcher: default=true,说明默认采用的是这个类型。 渲染页面的作用
+Includes or forwards to a view (usually a jsp). Behind the scenes Struts will use a RequestDispatcher, where the target servlet/JSP receives the same request/response objects as the original servlet/JSP. Therefore, you can pass data between them using request.setAttribute() - the Struts action is available.
+<!-- START SNIPPET: example -->
+ <result name="success" type="dispatcher">
+   <param name="location">foo.jsp</param>
+  </result>
+<!-- END SNIPPET: example -->
+
+type=freemarker:
+Renders a view using the Freemarker template engine.
+ <!-- START SNIPPET: example -->
+
+	<result name="success" type="freemarker">foo.ftl</result>
+
+<!-- END SNIPPET: example -->
+
+type=httpheader:
+ A custom Result type for setting HTTP headers and status by optionally evaluating against the ValueStack.
+This result can also be used to send an error to the client. All the parameters can be evaluated against the ValueStack.
+<!-- START SNIPPET: example -->
+<result name="success" type="httpheader">
+  <param name="status">204</param>
+  <param name="headers.a">a custom header value</param>
+  <param name="headers.b">another custom header value</param>
+</result>
+<result name="proxyRequired" type="httpheader">
+  <param name="error">305</param>
+  <param name="errorMessage">this action must be accessed through a proxy</param>
+</result>
+<!-- END SNIPPET: example -->
+
+type=redirect:
+Calls the {@link HttpServletResponse#sendRedirect(String) sendRedirect} method to the location specified. The response is told to redirect the browser to the specified location (a new request from the client). The consequence of doing this means that the action (action instance, action errors, field errors, etc) that was just executed is lost and no longer available. This is because actions are built on a single-thread model. The only way to pass data is through the session or with web parameters (url?name=value) which can be OGNL expressions.
+<!-- START SNIPPET: example -->
+<!--
+  The redirect URL generated will be:
+  /foo.jsp#FRAGMENT
+-->
+<result name="success" type="redirect">
+  <param name="location">foo.jsp</param>
+  <param name="parse">false</param>
+  <param name="anchor">FRAGMENT</param>
+</result>
+<!-- END SNIPPET: example -->
+
+type=redirectAction:
+This result uses the {@link ActionMapper} provided by the ActionMapperFactory to redirect the browser to a URL that invokes the  specified action and (optional) namespace. This is better than the  {@link ServletRedirectResult} because it does not require you to encode the  URL patterns processed by the {@link ActionMapper} in to your struts.xml configuration files. This means you can change your URL patterns at any point  and your application will still work. It is strongly recommended that if you are redirecting to another action, you use this result rather than the standard redirect result.
+
+<!-- START SNIPPET: example -->
+<package name="public" extends="struts-default">
+    <action name="login" class="...">
+        <!-- Redirect to another namespace -->
+        <result type="redirectAction">
+            <param name="actionName">dashboard</param>
+            <param name="namespace">/secure</param>
+        </result>
+    </action>
+</package>
+
+<package name="secure" extends="struts-default" namespace="/secure">
+    <-- Redirect to an action in the same namespace -->
+    <action name="dashboard" class="...">
+        <result>dashboard.jsp</result>
+        <result name="error" type="redirectAction">error</result>
+    </action>
+    <action name="error" class="...">
+        <result>error.jsp</result>
+    </action>
+</package>
+
+<package name="passingRequestParameters" extends="struts-default" namespace="/passingRequestParameters">
+   <!-- Pass parameters (reportType, width and height) -->
+   <!--
+   The redirectAction url generated will be :
+   /genReport/generateReport.action?reportType=pie&amp;width=100&amp;height=100#summary
+   -->
+   <action name="gatherReportInfo" class="...">
+      <result name="showReportResult" type="redirectAction">
+         <param name="actionName">generateReport</param>
+         <param name="namespace">/genReport</param>
+         <param name="reportType">pie</param>
+         <param name="width">100</param>
+         <param name="height">100</param>
+         <param name="empty"></param>
+         <param name="suppressEmptyParameters">true</param>
+         <param name="anchor">summary</param>
+      </result>
+   </action>
+</package>
+
+<!-- END SNIPPET: example -->
+
+type=stream:
+A custom Result type for sending raw data (via an InputStream) directly to the HttpServletResponse. Very useful for allowing users to download content.
+
+<!-- START SNIPPET: example -->
+<result name="success" type="stream">
+  <param name="contentType">image/jpeg</param>
+  <param name="inputName">imageStream</param>
+  <param name="contentDisposition">attachment;filename="document.pdf"</param>
+  <param name="bufferSize">1024</param>
+</result>
+<!-- END SNIPPET: example -->
+
+type=velocity:
+Using the Servlet container's {@link JspFactory}, this result mocks a JSP  execution environment and then displays a Velocity template that will be streamed directly to the servlet output.
+<!-- START SNIPPET: example -->
+<result name="success" type="velocity">
+  <param name="location">foo.vm</param>
+</result>
+<!-- END SNIPPET: example -->
+
+type=xslt:
+XSLTResult uses XSLT to transform an action object to XML. The recent version  has been specifically modified to deal with Xalan flaws. When using Xalan you may notice that even though you have a very minimal stylesheet like this one
+<!-- START SNIPPET: description.example -->
+<result name="success" type="xslt">
+  <param name="location">foo.xslt</param>
+  <param name="matchingPattern">^/result/[^/*]$</param>
+  <param name="excludingPattern">.*(hugeCollection).*</param>
+</result>
+<!-- END SNIPPET: description.example -->
+
+type=plainText:
+ A result that send the content out as plain text. Useful typically when needed to display the raw content of a JSP or Html file for example.
+ <!-- START SNIPPET: example -->
+
+<action name="displayJspRawContent" >
+  <result type="plainText">/myJspFile.jsp</result>
+</action>
+
+<action name="displayJspRawContent" >
+  <result type="plainText">
+     <param name="location">/myJspFile.jsp</param>
+     <param name="charSet">UTF-8</param>
+  </result>
+</action>
+
+<!-- END SNIPPET: example -->
+ 
+type=postback:
+A result that renders the current request parameters as a form which immediately submits a <a href="http://en.wikipedia.org/wiki/Postback">postback</a> to the specified destination.
+
+<!-- START SNIPPET: example -->
+<action name="registerThirdParty" >
+  <result type="postback">https://www.example.com/register</result>
+</action>
+<action name="registerThirdParty" >
+  <result type="postback">
+    <param name="namespace">/secure</param>
+    <param name="actionName">register2</param>
+  </result>
+</action>
+<!-- END SNIPPET: example -->
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- <package name="struts-default" abstract="true" strict-method-invocation="true">
-        <result-types>
-            <result-type name="chain" class="com.opensymphony.xwork2.ActionChainResult"/>
-            <result-type name="dispatcher" class="org.apache.struts2.result.ServletDispatcherResult" default="true"/>
-            <result-type name="freemarker" class="org.apache.struts2.views.freemarker.FreemarkerResult"/>
-            <result-type name="httpheader" class="org.apache.struts2.result.HttpHeaderResult"/>
-            <result-type name="redirect" class="org.apache.struts2.result.ServletRedirectResult"/>
-            <result-type name="redirectAction" class="org.apache.struts2.result.ServletActionRedirectResult"/>
-            <result-type name="stream" class="org.apache.struts2.result.StreamResult"/>
-            <result-type name="velocity" class="org.apache.struts2.result.VelocityResult"/>
-            <result-type name="xslt" class="org.apache.struts2.views.xslt.XSLTResult"/>
-            <result-type name="plainText" class="org.apache.struts2.result.PlainTextResult" />
-            <result-type name="postback" class="org.apache.struts2.result.PostbackResult" />
-        </result-types>
-
-        <interceptors>
-            <interceptor name="alias" class="com.opensymphony.xwork2.interceptor.AliasInterceptor"/>
-            <interceptor name="autowiring" class="com.opensymphony.xwork2.spring.interceptor.ActionAutowiringInterceptor"/>
-            <interceptor name="chain" class="com.opensymphony.xwork2.interceptor.ChainingInterceptor"/>
-            <interceptor name="conversionError" class="org.apache.struts2.interceptor.StrutsConversionErrorInterceptor"/>
-            <interceptor name="cookie" class="org.apache.struts2.interceptor.CookieInterceptor"/>
-            <interceptor name="cookieProvider" class="org.apache.struts2.interceptor.CookieProviderInterceptor"/>
-            <interceptor name="clearSession" class="org.apache.struts2.interceptor.ClearSessionInterceptor" />
-            <interceptor name="createSession" class="org.apache.struts2.interceptor.CreateSessionInterceptor" />
-            <interceptor name="debugging" class="org.apache.struts2.interceptor.debugging.DebuggingInterceptor" />
-            <interceptor name="execAndWait" class="org.apache.struts2.interceptor.ExecuteAndWaitInterceptor"/>
-            <interceptor name="exception" class="com.opensymphony.xwork2.interceptor.ExceptionMappingInterceptor"/>
-            <interceptor name="fileUpload" class="org.apache.struts2.interceptor.FileUploadInterceptor"/>
-            <interceptor name="i18n" class="com.opensymphony.xwork2.interceptor.I18nInterceptor"/>
-            <interceptor name="logger" class="com.opensymphony.xwork2.interceptor.LoggingInterceptor"/>
-            <interceptor name="modelDriven" class="com.opensymphony.xwork2.interceptor.ModelDrivenInterceptor"/>
-            <interceptor name="scopedModelDriven" class="com.opensymphony.xwork2.interceptor.ScopedModelDrivenInterceptor"/>
-            <interceptor name="params" class="com.opensymphony.xwork2.interceptor.ParametersInterceptor"/>
-            <interceptor name="actionMappingParams" class="org.apache.struts2.interceptor.ActionMappingParametersInteceptor"/>
-            <interceptor name="prepare" class="com.opensymphony.xwork2.interceptor.PrepareInterceptor"/>
-            <interceptor name="staticParams" class="com.opensymphony.xwork2.interceptor.StaticParametersInterceptor"/>
-            <interceptor name="scope" class="org.apache.struts2.interceptor.ScopeInterceptor"/>
-            <interceptor name="servletConfig" class="org.apache.struts2.interceptor.ServletConfigInterceptor"/>
-            <interceptor name="timer" class="com.opensymphony.xwork2.interceptor.TimerInterceptor"/>
-            <interceptor name="token" class="org.apache.struts2.interceptor.TokenInterceptor"/>
-            <interceptor name="tokenSession" class="org.apache.struts2.interceptor.TokenSessionStoreInterceptor"/>
-            <interceptor name="validation" class="org.apache.struts2.interceptor.validation.AnnotationValidationInterceptor"/>
-            <interceptor name="workflow" class="com.opensymphony.xwork2.interceptor.DefaultWorkflowInterceptor"/>
-            <interceptor name="store" class="org.apache.struts2.interceptor.MessageStoreInterceptor" />
-            <interceptor name="checkbox" class="org.apache.struts2.interceptor.CheckboxInterceptor" />
-            <interceptor name="datetime" class="org.apache.struts2.interceptor.DateTextFieldInterceptor" />
-            <interceptor name="profiling" class="org.apache.struts2.interceptor.ProfilingActivationInterceptor" />
-            <interceptor name="roles" class="org.apache.struts2.interceptor.RolesInterceptor" />
-            <interceptor name="annotationWorkflow" class="com.opensymphony.xwork2.interceptor.annotations.AnnotationWorkflowInterceptor" />
-            <interceptor name="multiselect" class="org.apache.struts2.interceptor.MultiselectInterceptor" />
-
-            <!-- Basic stack -->
-            <interceptor-stack name="basicStack">
-                <interceptor-ref name="exception"/>
-                <interceptor-ref name="servletConfig"/>
-                <interceptor-ref name="prepare"/>
-                <interceptor-ref name="checkbox"/>
-                <interceptor-ref name="datetime"/>
-                <interceptor-ref name="multiselect"/>
-                <interceptor-ref name="actionMappingParams"/>
-                <interceptor-ref name="params"/>
-                <interceptor-ref name="conversionError"/>
-            </interceptor-stack>
-
-            <!-- Sample validation and workflow stack -->
-            <interceptor-stack name="validationWorkflowStack">
-                <interceptor-ref name="basicStack"/>
-                <interceptor-ref name="validation"/>
-                <interceptor-ref name="workflow"/>
-            </interceptor-stack>
-
-            <!-- Sample file upload stack -->
-            <interceptor-stack name="fileUploadStack">
-                <interceptor-ref name="fileUpload"/>
-                <interceptor-ref name="basicStack"/>
-            </interceptor-stack>
-
-            <!-- Sample model-driven stack  -->
-            <interceptor-stack name="modelDrivenStack">
-                <interceptor-ref name="modelDriven"/>
-                <interceptor-ref name="basicStack"/>
-            </interceptor-stack>
-
-            <!-- Sample action chaining stack -->
-            <interceptor-stack name="chainStack">
-                <interceptor-ref name="chain"/>
-                <interceptor-ref name="basicStack"/>
-            </interceptor-stack>
-
-            <!-- Sample i18n stack -->
-            <interceptor-stack name="i18nStack">
-                <interceptor-ref name="i18n"/>
-                <interceptor-ref name="basicStack"/>
-            </interceptor-stack>
-
-            <!-- An example of the paramsPrepareParams trick. This stack
-                 is exactly the same as the defaultStack, except that it
-                 includes one extra interceptor before the prepare interceptor:
-                 the params interceptor.
-
-                 This is useful for when you wish to apply parameters directly
-                 to an object that you wish to load externally (such as a DAO
-                 or database or service layer), but can't load that object
-                 until at least the ID parameter has been loaded. By loading
-                 the parameters twice, you can retrieve the object in the
-                 prepare() method, allowing the second params interceptor to
-                 apply the values on the object. -->
-            <interceptor-stack name="paramsPrepareParamsStack">
-                <interceptor-ref name="exception"/>
-                <interceptor-ref name="alias"/>
-                <interceptor-ref name="i18n"/>
-                <interceptor-ref name="checkbox"/>
-                <interceptor-ref name="datetime"/>
-                <interceptor-ref name="multiselect"/>
-                <interceptor-ref name="params"/>
-                <interceptor-ref name="servletConfig"/>
-                <interceptor-ref name="prepare"/>
-                <interceptor-ref name="chain"/>
-                <interceptor-ref name="modelDriven"/>
-                <interceptor-ref name="fileUpload"/>
-                <interceptor-ref name="staticParams"/>
-                <interceptor-ref name="actionMappingParams"/>
-                <interceptor-ref name="params"/>
-                <interceptor-ref name="conversionError"/>
-                <interceptor-ref name="validation">
-                    <param name="excludeMethods">input,back,cancel,browse</param>
-                </interceptor-ref>
-                <interceptor-ref name="workflow">
-                    <param name="excludeMethods">input,back,cancel,browse</param>
-                </interceptor-ref>
-            </interceptor-stack>
-
-            <!-- A complete stack with all the common interceptors in place.
-                 Generally, this stack should be the one you use, though it
-                 may do more than you need. Also, the ordering can be
-                 switched around (ex: if you wish to have your servlet-related
-                 objects applied before prepare() is called, you'd need to move
-                 servletConfig interceptor up.
-
-                 This stack also excludes from the normal validation and workflow
-                 the method names input, back, and cancel. These typically are
-                 associated with requests that should not be validated.
-                 -->
-            <interceptor-stack name="defaultStack">
-                <interceptor-ref name="exception"/>
-                <interceptor-ref name="alias"/>
-                <interceptor-ref name="servletConfig"/>
-                <interceptor-ref name="i18n"/>
-                <interceptor-ref name="prepare"/>
-                <interceptor-ref name="chain"/>
-                <interceptor-ref name="scopedModelDriven"/>
-                <interceptor-ref name="modelDriven"/>
-                <interceptor-ref name="fileUpload"/>
-                <interceptor-ref name="checkbox"/>
-                <interceptor-ref name="datetime"/>
-                <interceptor-ref name="multiselect"/>
-                <interceptor-ref name="staticParams"/>
-                <interceptor-ref name="actionMappingParams"/>
-                <interceptor-ref name="params"/>
-                <interceptor-ref name="conversionError"/>
-                <interceptor-ref name="validation">
-                    <param name="excludeMethods">input,back,cancel,browse</param>
-                </interceptor-ref>
-                <interceptor-ref name="workflow">
-                    <param name="excludeMethods">input,back,cancel,browse</param>
-                </interceptor-ref>
-                <interceptor-ref name="debugging"/>
-            </interceptor-stack>
-
-            <!-- The completeStack is here for backwards compatibility for
-                 applications that still refer to the defaultStack by the
-                 old name -->
-            <interceptor-stack name="completeStack">
-                <interceptor-ref name="defaultStack"/>
-            </interceptor-stack>
-
-            <!-- Sample execute and wait stack.
-                 Note: execAndWait should always be the *last* interceptor. -->
-            <interceptor-stack name="executeAndWaitStack">
-                <interceptor-ref name="execAndWait">
-                    <param name="excludeMethods">input,back,cancel</param>
-                </interceptor-ref>
-                <interceptor-ref name="defaultStack"/>
-                <interceptor-ref name="execAndWait">
-                    <param name="excludeMethods">input,back,cancel</param>
-                </interceptor-ref>
-            </interceptor-stack>
-
-       </interceptors>
-
-        <default-interceptor-ref name="defaultStack"/>
-
-        <default-class-ref class="com.opensymphony.xwork2.ActionSupport" />
-
-        <global-allowed-methods>execute,input,back,cancel,browse,save,delete,list,index</global-allowed-methods>
-
-    </package>
