@@ -14,13 +14,72 @@
 
  2. 各种数据库连接池对比
  
-|	|Druid|BoneCP|DBCP|C3P0|Proxool| JBoss|Tomcat-Jdbc|
-| :--------|:----|:----|:----|:-----|:-----|:----|
-|LRU|是	|否|	是	|否	|是|	是|	?|
-|PSCache|	是|	是|	是	|是	|否	|否	|是|
-|PSCache-Oracle-Optimized	|是	|否	|否|	|否	|否|	否	|否|
-|ExceptionSorter	|是	|否	|否	|否	|否|	是	|否|
-|更新维护	|是|	否|	否	|否|	否|	?|	是|
+<table border=1>
+		<thead>
+		<tr>
+		<th style="text-align:left"></th>
+		<th style="text-align:left">Druid</th>
+		<th style="text-align:left">BoneCP</th>
+		<th style="text-align:left">DBCP</th>
+		<th style="text-align:left">C3P0</th>
+		<th style="text-align:left">Proxool</th>
+		<th style="text-align:left">JBoss</th>
+		<th style="text-align:left">Tomcat-Jdbc</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr>
+		<td style="text-align:left">LRU</td>
+		<td style="text-align:left">是</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">是</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">是</td>
+		<td style="text-align:left">是</td>
+		<td style="text-align:left">?</td>
+		</tr>
+		<tr>
+		<td style="text-align:left">PSCache</td>
+		<td style="text-align:left">是</td>
+		<td style="text-align:left">是</td>
+		<td style="text-align:left">是</td>
+		<td style="text-align:left">是</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">是</td>
+		</tr>
+		<tr>
+		<td style="text-align:left">PSCache-Oracle-Optimized</td>
+		<td style="text-align:left">是</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left"></td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">否</td>
+		</tr>
+		<tr>
+		<td style="text-align:left">ExceptionSorter</td>
+		<td style="text-align:left">是</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">是</td>
+		<td style="text-align:left">否</td>
+		</tr>
+		<tr>
+		<td style="text-align:left">更新维护</td>
+		<td style="text-align:left">是</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">否</td>
+		<td style="text-align:left">?</td>
+		<td style="text-align:left">是</td>
+		</tr>
+		</tbody>
+</table>
 
     LRU
 
